@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 // 
 require('dotenv').config();
 // 
+const bcrypt = require('bcrypt');
+
 router.post('/signup', (req, res) => {
     console.log('sent by client -', req.body);
    const { name,namep, namem, email, password } = req.body;
@@ -35,6 +37,35 @@ router.post('/signup', (req, res) => {
         
         }
    )
-
 })
+
+router.post('/signin', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(422).json({ error: "Por favor agregue correo electrónico o contraseña" });
+    }
+    const savedUser = await  User.findOne({ email: email })
+    if (!savedUser) {
+        return res.status(422).json({ error: "crendenciales invalidas" });
+    }
+
+    try {
+        bcrypt.compare(password, savedUser.password, (err, result) => {
+            if (result) {
+                console.log("Contraseña coincidente");
+                const token = jwt.sign({ _id: savedUser._id }, process.env.JWT_SECRET);
+                res.send({ token });
+            }
+            else {
+                console.log('Las contraseñas no coinciden');
+                return res.status(422).json({ error: "credenciales invalidas" });
+            }
+        })
+    }
+    
+    catch (err) {
+        console.log(err);
+    }
+})
+
 module.exports = router;
