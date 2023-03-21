@@ -49,6 +49,7 @@ router.post('/signin', async (req, res) => {
         return res.status(422).json({ error: "crendenciales invalidas" });
     }
 
+    
     try {
         bcrypt.compare(password, savedUser.password, (err, result) => {
             if (result) {
